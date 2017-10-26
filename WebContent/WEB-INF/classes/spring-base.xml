@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:context="http://www.springframework.org/schema/context" 
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:jaxws="http://cxf.apache.org/jaxws" xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+		http://www.springframework.org/schema/task  http://www.springframework.org/schema/task/spring-task.xsd"
+		default-lazy-init="true">
+
+	<description>Spring公共配置 </description>
+	
+	<!-- 开启Spring扫描，排除由SpringMVC管理的Controller @1-->
+	<context:component-scan base-package="com.task">
+		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+		<context:exclude-filter type="annotation" expression="org.springframework.web.bind.annotation.ControllerAdvice"/>
+	</context:component-scan>
+	
+	<!-- 加载配置文件 -->
+	<context:property-placeholder system-properties-mode="FALLBACK" ignore-unresolvable="true" location="classpath*:/db.properties" />	
+	
+	<!-- Druid数据源配置 -->
+	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" destroy-method="close">
+		<property name="url" value="${db.url}" />
+		<property name="username" value="${db.username}" />
+		<property name="password" value="${db.password}" />
+		<property name="filters" value="${db.filters}"/>
+		<property name="maxActive" value="${db.maxActive}" />
+		<property name="initialSize" value="${db.initialSize}" />
+		<property name="maxWait" value="${db.maxWait}" />
+		<property name="minIdle" value="${db.minIdle}" />
+
+		<property name="timeBetweenEvictionRunsMillis" value="60000" />
+		<property name="minEvictableIdleTimeMillis" value="300000" />
+		<property name="validationQuery" value="SELECT 'x'" />
+		<property name="testWhileIdle" value="true" />
+		<property name="testOnBorrow" value="false" />
+		<property name="testOnReturn" value="false" />
+		<property name="poolPreparedStatements" value="true" />
+		<property name="maxOpenPreparedStatements" value="20" />
+	</bean>
+	
+	<!-- 事务管理器配置 -->
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	
+	<!-- 配置事务 -->
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="find*" read-only="true" />
+			<tx:method name="get*" read-only="true" />
+			<tx:method name="count*" read-only="true" />
+			<tx:method name="*" rollback-for="java.lang.RuntimeException" />
+		</tx:attributes>
+	</tx:advice>
+	
+	<!-- AOP配置 -->
+	<aop:config>
+		<!-- 切点配置 @2-->
+		<aop:pointcut id="serviceMethod" expression="execution(* com.task.**.service..*Service.*(..))"/>
+		<!-- 事务定义 -->
+		<aop:advisor pointcut-ref="serviceMethod" advice-ref="txAdvice"/>
+	</aop:config>
+	
+	
+	<!-- MyBatis配置 @3 -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="mapperLocations" value="classpath*:com/task/**/mapper/*.xml" />
+	</bean>
+	
+	<!-- MyBatis自动扫描注册DAO @4-->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">  
+		<property name="basePackage" value="com.task.**.dao" />
+	</bean>
+</beans>

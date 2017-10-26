@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- @1 -->
+<mapper namespace="com.task.dao.WorkTypeDao">
+
+	<!-- 登录验证 -->
+	<select id="login" parameterType="com.task.entity.User"  resultType="com.task.entity.User"> 
+           select *from user where userName =#{userName} and userPassword=#{userPassword}
+    </select>
+    
+    <!-- 查询全部工作@2 -->
+	<select id="getInfos"  resultType="com.task.entity.WorkType">
+		select * FROM worktype
+	</select>
+	 <!-- 根据工作id查询工作@2 -->
+	<select id="getByWorkType"  resultType="com.task.entity.WorkType">
+		select * FROM worktype where id=#{id}
+	</select>
+    
+	<!-- 新增 -->
+	<insert id="addInfo" parameterType="com.task.entity.WorkType" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO
+			worktype(user_id,workName)
+		VALUES
+			(#{userId},#{workName})
+	</insert>
+	
+	<!-- 删除 -->
+	<delete id="delInfo" parameterType="Integer">
+		DELETE FROM
+			worktype
+		WHERE
+			id = #{workid}
+	</delete>
+	<!-- 修改 -->
+	<update id="updateInfo" parameterType="com.task.entity.WorkType">
+		UPDATE
+			worktype
+		SET
+			workName = #{workName}       
+		WHERE
+			id = #{id}
+	</update>
+</mapper>

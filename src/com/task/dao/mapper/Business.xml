@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- @1 -->
+<mapper namespace="com.task.dao.BusinessDao">
+	
+	<!-- 工作全查询@2 -->
+	<select id="getInfos"  resultType="com.task.entity.Business">
+		select * FROM business
+	</select>
+	<!-- 根据Id查询-->
+	<select id="getById"  resultType="com.task.entity.Business">
+		select * FROM business where worktypeid=#{workTypeId}
+	</select>
+	
+	<!-- 新增 -->
+	<insert id="addInfo" parameterType="com.task.entity.Business" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO
+			business(describes,worktypeid)
+		VALUES
+			(#{describes},#{workTypeId})
+	</insert>
+	<!-- 删除 -->
+	<delete id="delInfo" parameterType="Integer">
+		DELETE FROM
+			Business
+		WHERE
+			id = #{id}
+	</delete>
+	<!--修改 -->
+	<update id="updateInfo" parameterType="com.task.entity.Business">
+		UPDATE
+			business
+		SET
+			worktypeid = #{workTypeId}, describes = #{describes}     
+			      
+		WHERE
+			id = #{id}
+	</update>
+</mapper>
